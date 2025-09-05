@@ -3,4 +3,6 @@ O projeto trata-se de um banco de dados dos alunos de Hogwards. Nele cada aluno 
 
 membros da equipe: 
 Felipe Fonseca Vidal Prado
+Matricula: 1898
 Brenda Heringer Hott Vieira 
+Matricula: 377
