@@ -162,4 +162,66 @@ public class ProfessorDAO extends ConnectionDAO {
         return lista;
     }
 
+    // JOIN com tabela intermediária: professores e quantidade de alunos
+    public List<String> joinContarAlunosPorProfessor() {
+        connectToDB();
+        List<String> lista = new ArrayList<>();
+
+        String sql = """
+        SELECT p.nome_completo AS professor, COUNT(a.id) AS qtd_alunos
+        FROM professor p
+        JOIN professor_has_aluno pa ON pa.professor_id = p.id
+        JOIN aluno a ON a.id = pa.aluno_id
+        GROUP BY p.id, p.nome_completo;
+    """;
+
+        try {
+            st = connection.createStatement();
+            rs = st.executeQuery(sql);
+
+            while (rs.next()) {
+                String linha = "Professor " + rs.getString("professor") +
+                        " possui " + rs.getInt("qtd_alunos") + " aluno(s)";
+                lista.add(linha);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro JOIN contagem alunos por professor: " + e.getMessage());
+        } finally {
+            finishConnection();
+        }
+
+        return lista;
+    }
+
+    // JOIN com tabela intermediária: professores e as casas dos seus alunos
+    public List<String> joinProfessoresCasasDosAlunos() {
+        connectToDB();
+        List<String> lista = new ArrayList<>();
+
+        String sql = """
+        SELECT DISTINCT p.nome_completo AS professor, c.nome AS casa
+        FROM professor p
+        JOIN professor_has_aluno pa ON pa.professor_id = p.id
+        JOIN aluno a ON a.id = pa.aluno_id
+        JOIN casa c ON c.casa_id = a.casa_casa_id;
+    """;
+
+        try {
+            st = connection.createStatement();
+            rs = st.executeQuery(sql);
+
+            while (rs.next()) {
+                String linha = "Professor " + rs.getString("professor") +
+                        " dá aula para alunos da casa " + rs.getString("casa");
+                lista.add(linha);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro JOIN professores + casas dos alunos: " + e.getMessage());
+        } finally {
+            finishConnection();
+        }
+
+        return lista;
+    }
+
 }

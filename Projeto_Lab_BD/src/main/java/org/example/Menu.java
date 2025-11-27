@@ -6,19 +6,25 @@ import org.example.model.*;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Classe responsável pelo MENU de texto.
+ * Toda interação com o usuário acontece aqui.
+ */
 public class Menu {
 
     private final Scanner sc = new Scanner(System.in);
 
+    // DAOs usados pelo menu
     private final AlunoDAO alunoDAO = new AlunoDAO();
     private final CasaDAO casaDAO = new CasaDAO();
     private final ProfessorDAO professorDAO = new ProfessorDAO();
     private final VarinhaDAO varinhaDAO = new VarinhaDAO();
     private final AnimalDAO animalDAO = new AnimalDAO();
 
-    // =======================
-    // MENU PRINCIPAL
-    // =======================
+    /**
+     * Inicia o menu principal.
+     * Fica em loop até o usuário escolher opção 0 (sair).
+     */
     public void iniciar() {
         int opcao;
 
@@ -49,10 +55,7 @@ public class Menu {
         } while (opcao != 0);
     }
 
-    // =======================
-    // SUBMENUS
-    // =======================
-
+    // ---------- SUBMENU ALUNO ----------
     private void menuAluno() {
         int op;
         do {
@@ -77,6 +80,7 @@ public class Menu {
         } while (op != 0);
     }
 
+    // ---------- SUBMENU CASA ----------
     private void menuCasa() {
         int op;
         do {
@@ -91,6 +95,7 @@ public class Menu {
         } while (op != 0);
     }
 
+    // (mesma ideia pros outros submenus)
     private void menuProfessor() {
         int op;
         do {
@@ -133,16 +138,17 @@ public class Menu {
         } while (op != 0);
     }
 
-    // =======================
-    // CONSULTAS COM JOIN
-    // =======================
+    // ---------- SUBMENU CONSULTAS JOIN ----------
     private void menuConsultasJoin() {
         int op;
         do {
             System.out.println("\n--- CONSULTAS JOIN ---");
             System.out.println("1 - Alunos com suas Casas (JOIN simples)");
-            System.out.println("2 - Alunos com Animais (JOIN)");
-            System.out.println("3 - Professores e seus Alunos (JOIN N:N)");
+            System.out.println("2 - Alunos com Animais (JOIN simples)");
+            System.out.println("3 - Varinhas e seus Donos (JOIN simples)");
+            System.out.println("4 - Professores e seus Alunos (N:N)");
+            System.out.println("5 - Professores e quantidade de Alunos (N:N + GROUP BY)");
+            System.out.println("6 - Professores e Casas dos seus Alunos (N:N + JOIN casa)");
             System.out.println("0 - Voltar");
             System.out.print("Escolha: ");
             op = sc.nextInt();
@@ -150,18 +156,19 @@ public class Menu {
             switch (op) {
                 case 1 -> joinAlunosCasas();
                 case 2 -> joinAlunosAnimais();
-                case 3 -> joinProfessoresAlunos();
+                case 3 -> joinVarinhasAlunos();
+                case 4 -> joinProfessoresAlunos();
+                case 5 -> joinProfessoresQtdAlunos();
+                case 6 -> joinProfessoresCasasAlunos();
             }
 
         } while (op != 0);
     }
 
-    // =======================
-    // IMPLEMENTAÇÃO CRUD
-    // =======================
 
+    // ---------- IMPLEMENTAÇÃO CRUD ALUNO ----------
     private void inserirAluno() {
-        sc.nextLine();
+        sc.nextLine(); // consome quebra de linha pendente
 
         Aluno a = new Aluno();
 
@@ -177,7 +184,7 @@ public class Menu {
         System.out.print("Casa ID: ");
         a.casaId = sc.nextInt();
 
-        sc.nextLine();
+        sc.nextLine(); // consome quebra de linha
         System.out.print("Email: ");
         a.email = sc.nextLine();
 
@@ -237,38 +244,41 @@ public class Menu {
         System.out.println(a != null ? a : "Aluno não encontrado!");
     }
 
+    // ---------- LISTAGENS SIMPLES ----------
     private void listarCasas() { casaDAO.findAll().forEach(System.out::println); }
     private void listarProfessores() { professorDAO.findAll().forEach(System.out::println); }
     private void listarVarinhas() { varinhaDAO.findAll().forEach(System.out::println); }
     private void listarAnimais() { animalDAO.findAll().forEach(System.out::println); }
 
-    // =======================
-    // JOINs obrigatórios
-    // =======================
-
+    // ---------- EXECUÇÃO DOS JOINs ----------
     private void joinAlunosCasas() {
-        System.out.println("\n=== JOIN: ALUNOS + CASAS ===");
-        System.out.println("""
-                SELECT a.id, a.nome_completo, c.nome AS casa
-                FROM aluno a
-                JOIN casa c ON c.casa_id = a.casa_casa_id;
-                """);
-
-        alunoDAO.joinAlunosComCasas()
-                .forEach(System.out::println);
+        System.out.println("\n=== ALUNOS E SUAS CASAS ===");
+        alunoDAO.joinAlunosComCasas().forEach(System.out::println);
     }
 
     private void joinAlunosAnimais() {
-        System.out.println("\n=== JOIN: ALUNOS + ANIMAIS ===");
-
-        alunoDAO.joinAlunosComAnimais()
-                .forEach(System.out::println);
+        System.out.println("\n=== ALUNOS E SEUS ANIMAIS ===");
+        alunoDAO.joinAlunosComAnimais().forEach(System.out::println);
     }
 
     private void joinProfessoresAlunos() {
-        System.out.println("\n=== JOIN: PROFESSOR + ALUNOS (N:N) ===");
-
-        professorDAO.joinProfessoresAlunos()
-                .forEach(System.out::println);
+        System.out.println("\n=== PROFESSORES E ALUNOS (N:N) ===");
+        professorDAO.joinProfessoresAlunos().forEach(System.out::println);
     }
+
+    private void joinVarinhasAlunos() {
+        System.out.println("\n=== VARINHAS E SEUS DONOS ===");
+        varinhaDAO.joinVarinhasAlunos().forEach(System.out::println);
+    }
+
+    private void joinProfessoresQtdAlunos() {
+        System.out.println("\n=== PROFESSORES E QUANTIDADE DE ALUNOS ===");
+        professorDAO.joinContarAlunosPorProfessor().forEach(System.out::println);
+    }
+
+    private void joinProfessoresCasasAlunos() {
+        System.out.println("\n=== PROFESSORES E CASAS DOS ALUNOS ===");
+        professorDAO.joinProfessoresCasasDosAlunos().forEach(System.out::println);
+    }
+
 }

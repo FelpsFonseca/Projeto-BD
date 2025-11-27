@@ -128,4 +128,35 @@ public class VarinhaDAO extends ConnectionDAO {
 
         return lista;
     }
+
+    // JOIN simples: Varinhas e seus donos (Alunos)
+    public List<String> joinVarinhasAlunos() {
+        connectToDB();
+        List<String> lista = new ArrayList<>();
+
+        String sql = """
+        SELECT v.nome AS varinha, v.tipo_de_madeira, a.nome_completo AS aluno
+        FROM varinha v
+        JOIN aluno a ON a.id = v.aluno_id;
+    """;
+
+        try {
+            st = connection.createStatement();
+            rs = st.executeQuery(sql);
+
+            while (rs.next()) {
+                String linha = "Varinha '" + rs.getString("varinha") +
+                        "' (" + rs.getString("tipo_de_madeira") + ") do aluno " +
+                        rs.getString("aluno");
+                lista.add(linha);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro JOIN varinhas+alunos: " + e.getMessage());
+        } finally {
+            finishConnection();
+        }
+
+        return lista;
+    }
+
 }
